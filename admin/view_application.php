@@ -1,4 +1,5 @@
 <?php
+// Shows full details of one application — personal info, BGCSE results, documents
 require_once '../includes/db.php';
 if (!isset($_SESSION['admin_id'])) { header('Location: login.php'); exit; }
 
@@ -16,7 +17,7 @@ if (!$app) { header('Location: applications.php'); exit; }
 $results = mysqli_fetch_all(mysqli_query($conn, "SELECT * FROM bgcse_results WHERE application_id=$app_id ORDER BY subject"), MYSQLI_ASSOC);
 $docs    = mysqli_fetch_all(mysqli_query($conn, "SELECT * FROM documents WHERE application_id=$app_id"), MYSQLI_ASSOC);
 
-// Handle status update
+// Admin updates this single application's status
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $new_status = mysqli_real_escape_string($conn, $_POST['status']);
     mysqli_query($conn, "UPDATE applications SET status='$new_status' WHERE id=$app_id");

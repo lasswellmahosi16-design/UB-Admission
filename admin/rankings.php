@@ -1,4 +1,6 @@
 <?php
+// Auto-ranks submitted applicants by BGCSE points (highest first)
+// Default programme is BSc General as required by the assignment
 require_once '../includes/db.php';
 if (!isset($_SESSION['admin_id'])) { header('Location: login.php'); exit; }
 
@@ -8,7 +10,7 @@ $selected_programme = isset($_GET['programme']) ? $_GET['programme'] : 'BSc Gene
 
 $prog_escaped = mysqli_real_escape_string($conn, $selected_programme);
 
-// Fetch ranked students for selected programme
+// ORDER BY total_bgcse_points DESC = highest points first (auto-ranking)
 $ranked = mysqli_fetch_all(mysqli_query($conn, "
     SELECT a.id as app_id, a.total_bgcse_points, a.status, a.submitted_at,
            s.first_name, s.last_name, s.email, s.phone, s.omang_passport,

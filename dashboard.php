@@ -1,4 +1,5 @@
 <?php
+// Student dashboard — shows application summary and quick links
 require_once 'includes/db.php';
 if (!isset($_SESSION['student_id'])) {
     header('Location: login.php');
@@ -7,10 +8,10 @@ if (!isset($_SESSION['student_id'])) {
 
 $sid = (int)$_SESSION['student_id'];
 
-// Get student info
+// Fetch student details using their session ID
 $student = mysqli_fetch_assoc(mysqli_query($conn, "SELECT * FROM students WHERE id=$sid"));
 
-// Get applications
+// Fetch all applications for this student, newest first
 $apps = mysqli_query($conn, "SELECT * FROM applications WHERE student_id=$sid ORDER BY created_at DESC");
 $app_count = mysqli_num_rows($apps);
 $apps_arr = mysqli_fetch_all($apps, MYSQLI_ASSOC);

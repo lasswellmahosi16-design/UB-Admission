@@ -4,6 +4,7 @@ $error = '';
 $success = '';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    // Collect and sanitize all form fields — mysqli_real_escape_string prevents SQL injection
     $first   = trim(mysqli_real_escape_string($conn, $_POST['first_name']));
     $last    = trim(mysqli_real_escape_string($conn, $_POST['last_name']));
     $email   = trim(mysqli_real_escape_string($conn, $_POST['email']));
@@ -15,6 +16,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $pass    = $_POST['password'];
     $pass2   = $_POST['confirm_password'];
 
+    // Validate inputs before touching the database
     if (!$first || !$last || !$email || !$pass) {
         $error = 'Please fill in all required fields.';
     } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
@@ -24,11 +26,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     } elseif ($pass !== $pass2) {
         $error = 'Passwords do not match.';
     } else {
-        // Check if email exists
+        // Check if this email is already registered
         $check = mysqli_query($conn, "SELECT id FROM students WHERE email='$email'");
         if (mysqli_num_rows($check) > 0) {
             $error = 'An account with this email already exists. Please <a href="login.php">login</a>.';
         } else {
+            // Hash the password — never store plain text passwords
             $hash = password_hash($pass, PASSWORD_DEFAULT);
             $sql = "INSERT INTO students (first_name,last_name,email,password,phone,date_of_birth,gender,nationality,omang_passport)
                     VALUES ('$first','$last','$email','$hash','$phone','$dob','$gender','$nat','$omang')";
@@ -91,35 +94,47 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 <div class="form-row">
                     <div class="form-group">
                         <label>First Name <span class="required">*</span></label>
-                        <input type="text" name="first_name" class="form-control" value="<?= htmlspecialchars($_POST['first_name'] ?? '') ?>" required>
+                        <input type="text" name="first_name" class="form-control"
+                               placeholder="e.g. Kagiso"
+                               value="<?= htmlspecialchars($_POST['first_name'] ?? '') ?>" required>
                     </div>
                     <div class="form-group">
                         <label>Last Name <span class="required">*</span></label>
-                        <input type="text" name="last_name" class="form-control" value="<?= htmlspecialchars($_POST['last_name'] ?? '') ?>" required>
+                        <input type="text" name="last_name" class="form-control"
+                               placeholder="e.g. Motse"
+                               value="<?= htmlspecialchars($_POST['last_name'] ?? '') ?>" required>
                     </div>
                 </div>
 
                 <div class="form-group">
                     <label>Email Address <span class="required">*</span></label>
-                    <input type="email" name="email" class="form-control" value="<?= htmlspecialchars($_POST['email'] ?? '') ?>" required>
+                    <input type="email" name="email" class="form-control"
+                           placeholder="e.g. kagiso.motse@gmail.com"
+                           value="<?= htmlspecialchars($_POST['email'] ?? '') ?>" required>
                     <p class="form-hint">This will be your login username</p>
                 </div>
 
                 <div class="form-row">
                     <div class="form-group">
                         <label>Phone Number</label>
-                        <input type="tel" name="phone" class="form-control" value="<?= htmlspecialchars($_POST['phone'] ?? '') ?>">
+                        <!-- Botswana numbers are 8 digits, starting with 7 for mobile -->
+                        <input type="tel" name="phone" class="form-control"
+                               placeholder="e.g. 71234567"
+                               value="<?= htmlspecialchars($_POST['phone'] ?? '') ?>">
                     </div>
                     <div class="form-group">
                         <label>Omang / Passport No.</label>
-                        <input type="text" name="omang_passport" class="form-control" value="<?= htmlspecialchars($_POST['omang_passport'] ?? '') ?>">
+                        <input type="text" name="omang_passport" class="form-control"
+                               placeholder="e.g. 123456789"
+                               value="<?= htmlspecialchars($_POST['omang_passport'] ?? '') ?>">
                     </div>
                 </div>
 
                 <div class="form-row-3">
                     <div class="form-group">
                         <label>Date of Birth</label>
-                        <input type="date" name="date_of_birth" class="form-control" value="<?= htmlspecialchars($_POST['date_of_birth'] ?? '') ?>">
+                        <input type="date" name="date_of_birth" class="form-control"
+                               value="<?= htmlspecialchars($_POST['date_of_birth'] ?? '') ?>">
                     </div>
                     <div class="form-group">
                         <label>Gender</label>
@@ -132,7 +147,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     </div>
                     <div class="form-group">
                         <label>Nationality</label>
-                        <input type="text" name="nationality" class="form-control" value="<?= htmlspecialchars($_POST['nationality'] ?? 'Motswana') ?>">
+                        <input type="text" name="nationality" class="form-control"
+                               placeholder="e.g. Motswana"
+                               value="<?= htmlspecialchars($_POST['nationality'] ?? 'Motswana') ?>">
                     </div>
                 </div>
 
@@ -141,12 +158,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 <div class="form-row">
                     <div class="form-group">
                         <label>Password <span class="required">*</span></label>
-                        <input type="password" name="password" class="form-control" required minlength="6">
+                        <input type="password" name="password" class="form-control"
+                               placeholder="At least 6 characters"
+                               required minlength="6">
                         <p class="form-hint">Minimum 6 characters</p>
                     </div>
                     <div class="form-group">
                         <label>Confirm Password <span class="required">*</span></label>
-                        <input type="password" name="confirm_password" class="form-control" required>
+                        <input type="password" name="confirm_password" class="form-control"
+                               placeholder="Repeat your password"
+                               required>
                     </div>
                 </div>
 

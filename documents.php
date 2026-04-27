@@ -1,4 +1,6 @@
 <?php
+// Handles document uploads (PDF/JPG/PNG, max 5MB) and deletion
+// Files are saved in /uploads/ folder; only the path is stored in the DB
 require_once 'includes/db.php';
 if (!isset($_SESSION['student_id'])) { header('Location: login.php'); exit; }
 

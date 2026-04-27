@@ -1,8 +1,9 @@
 <?php
+// Lists all student applications with filter, search, and status update
 require_once '../includes/db.php';
 if (!isset($_SESSION['admin_id'])) { header('Location: login.php'); exit; }
 
-// Handle status update
+// Admin updates an application's status (e.g. accepted, rejected)
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_status'])) {
     $app_id    = (int)$_POST['app_id'];
     $new_status = mysqli_real_escape_string($conn, $_POST['new_status']);
@@ -10,7 +11,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_status'])) {
     $success = 'Status updated!';
 }
 
-// Filters
+// Build filter conditions based on URL query parameters
 $filter_status  = isset($_GET['status'])    ? mysqli_real_escape_string($conn, $_GET['status']) : '';
 $filter_prog    = isset($_GET['programme']) ? mysqli_real_escape_string($conn, $_GET['programme']) : '';
 $search         = isset($_GET['search'])    ? mysqli_real_escape_string($conn, $_GET['search']) : '';
@@ -30,7 +31,7 @@ $apps = mysqli_fetch_all(mysqli_query($conn, "
     ORDER BY a.created_at DESC
 "), MYSQLI_ASSOC);
 
-// Get programmes for filter
+// Get distinct programmes to populate the filter dropdown
 $progs = mysqli_fetch_all(mysqli_query($conn, "SELECT DISTINCT programme FROM applications ORDER BY programme"), MYSQLI_ASSOC);
 ?>
 <!DOCTYPE html>
@@ -76,7 +77,7 @@ $progs = mysqli_fetch_all(mysqli_query($conn, "SELECT DISTINCT programme FROM ap
                 <div style="display:flex; gap:14px; flex-wrap:wrap; align-items:flex-end;">
                     <div class="form-group" style="margin:0; flex:1; min-width:200px;">
                         <label style="font-size:0.8rem;">Search</label>
-                        <input type="text" name="search" class="form-control" placeholder="Name or email..." value="<?= htmlspecialchars($_GET['search'] ?? '') ?>">
+                        <input type="text" name="search" class="form-control" placeholder="e.g. Kagiso or kagiso@gmail.com" value="<?= htmlspecialchars($_GET['search'] ?? '') ?>">
                     </div>
                     <div class="form-group" style="margin:0; min-width:160px;">
                         <label style="font-size:0.8rem;">Status</label>

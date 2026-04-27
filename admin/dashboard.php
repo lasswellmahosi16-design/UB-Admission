@@ -1,4 +1,5 @@
 <?php
+// Admin dashboard — shows summary stats and recent applications
 require_once '../includes/db.php';
 if (!isset($_SESSION['admin_id'])) { header('Location: login.php'); exit; }
 

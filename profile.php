@@ -1,12 +1,15 @@
 <?php
 require_once 'includes/db.php';
+// Redirect to login if not logged in
 if (!isset($_SESSION['student_id'])) { header('Location: login.php'); exit; }
 
 $sid = (int)$_SESSION['student_id'];
+// Fetch current student data to pre-fill the form
 $student = mysqli_fetch_assoc(mysqli_query($conn, "SELECT * FROM students WHERE id=$sid"));
 $error = ''; $success = '';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    // Sanitize all personal info fields
     $phone   = mysqli_real_escape_string($conn, trim($_POST['phone']));
     $dob     = mysqli_real_escape_string($conn, $_POST['date_of_birth']);
     $gender  = mysqli_real_escape_string($conn, $_POST['gender']);
@@ -16,7 +19,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $fname   = mysqli_real_escape_string($conn, trim($_POST['first_name']));
     $lname   = mysqli_real_escape_string($conn, trim($_POST['last_name']));
 
-    // Handle password change
+    // Handle optional password change — only runs if new_password field is filled
     $pass_sql = '';
     if (!empty($_POST['new_password'])) {
         if ($_POST['new_password'] !== $_POST['confirm_password']) {
@@ -32,6 +35,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 
     if (!$error) {
+        // Update personal info only — email stays the same (it is the login identifier)
         $sql = "UPDATE students SET 
             first_name='$fname', last_name='$lname',
             phone='$phone', date_of_birth='$dob',
@@ -41,6 +45,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             WHERE id=$sid";
 
         if (mysqli_query($conn, $sql)) {
+            // Update the name stored in session so navbar shows the new name
             $_SESSION['student_name'] = $fname . ' ' . $lname;
             $success = 'Profile updated successfully!';
             $student = mysqli_fetch_assoc(mysqli_query($conn, "SELECT * FROM students WHERE id=$sid"));
@@ -100,14 +105,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     <div class="form-row">
                         <div class="form-group">
                             <label>First Name <span class="required">*</span></label>
-                            <input type="text" name="first_name" class="form-control" value="<?= htmlspecialchars($student['first_name']) ?>" required>
+                            <input type="text" name="first_name" class="form-control"
+                                   placeholder="e.g. Kagiso"
+                                   value="<?= htmlspecialchars($student['first_name']) ?>" required>
                         </div>
                         <div class="form-group">
                             <label>Last Name <span class="required">*</span></label>
-                            <input type="text" name="last_name" class="form-control" value="<?= htmlspecialchars($student['last_name']) ?>" required>
+                            <input type="text" name="last_name" class="form-control"
+                                   placeholder="e.g. Motse"
+                                   value="<?= htmlspecialchars($student['last_name']) ?>" required>
                         </div>
                     </div>
 
+                    <!-- Email is disabled — it cannot be changed as it is the login identifier -->
                     <div class="form-group">
                         <label>Email Address</label>
                         <input type="email" class="form-control" value="<?= htmlspecialchars($student['email']) ?>" disabled style="background:var(--off-white); color:var(--mid-gray);">
@@ -117,11 +127,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     <div class="form-row">
                         <div class="form-group">
                             <label>Phone Number</label>
-                            <input type="tel" name="phone" class="form-control" value="<?= htmlspecialchars($student['phone']) ?>">
+                            <input type="tel" name="phone" class="form-control"
+                                   placeholder="e.g. 71234567"
+                                   value="<?= htmlspecialchars($student['phone']) ?>">
                         </div>
                         <div class="form-group">
                             <label>Omang / Passport No.</label>
-                            <input type="text" name="omang_passport" class="form-control" value="<?= htmlspecialchars($student['omang_passport']) ?>">
+                            <input type="text" name="omang_passport" class="form-control"
+                                   placeholder="e.g. 123456789"
+                                   value="<?= htmlspecialchars($student['omang_passport']) ?>">
                         </div>
                     </div>
 
@@ -143,12 +157,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
                     <div class="form-group">
                         <label>Nationality</label>
-                        <input type="text" name="nationality" class="form-control" value="<?= htmlspecialchars($student['nationality']) ?>">
+                        <input type="text" name="nationality" class="form-control"
+                               placeholder="e.g. Motswana"
+                               value="<?= htmlspecialchars($student['nationality']) ?>">
                     </div>
 
                     <div class="form-group">
                         <label>Postal Address</label>
-                        <textarea name="address" class="form-control" rows="3" style="resize:vertical;"><?= htmlspecialchars($student['address']) ?></textarea>
+                        <textarea name="address" class="form-control" rows="3"
+                                  placeholder="e.g. Plot 123, Gaborone, Botswana"
+                                  style="resize:vertical;"><?= htmlspecialchars($student['address']) ?></textarea>
                     </div>
                 </div>
             </div>
@@ -161,16 +179,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         <p style="font-size:0.85rem; color:var(--mid-gray); margin-bottom:18px;">Leave blank if you don't want to change your password.</p>
                         <div class="form-group">
                             <label>Current Password</label>
-                            <input type="password" name="current_password" class="form-control">
+                            <input type="password" name="current_password" class="form-control"
+                                   placeholder="Enter your current password">
                         </div>
                         <div class="form-group">
                             <label>New Password</label>
-                            <input type="password" name="new_password" class="form-control" minlength="6">
+                            <input type="password" name="new_password" class="form-control"
+                                   placeholder="At least 6 characters"
+                                   minlength="6">
                             <p class="form-hint">Minimum 6 characters</p>
                         </div>
                         <div class="form-group">
                             <label>Confirm New Password</label>
-                            <input type="password" name="confirm_password" class="form-control">
+                            <input type="password" name="confirm_password" class="form-control"
+                                   placeholder="Repeat your new password">
                         </div>
                     </div>
                 </div>

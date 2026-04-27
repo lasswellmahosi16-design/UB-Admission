@@ -2,6 +2,7 @@
 require_once '../includes/db.php';
 $error = '';
 
+// If already logged in as admin, skip the login page
 if (isset($_SESSION['admin_id'])) {
     header('Location: dashboard.php');
     exit;
@@ -11,9 +12,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $username = trim(mysqli_real_escape_string($conn, $_POST['username']));
     $pass     = $_POST['password'];
 
+    // Find admin by username
     $result = mysqli_query($conn, "SELECT * FROM admins WHERE username='$username'");
     if ($result && mysqli_num_rows($result) === 1) {
         $admin = mysqli_fetch_assoc($result);
+        // Verify password against the stored bcrypt hash
         if (password_verify($pass, $admin['password'])) {
             $_SESSION['admin_id']   = $admin['id'];
             $_SESSION['admin_name'] = $admin['full_name'];
@@ -51,19 +54,26 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 <form method="POST" action="">
                     <div class="form-group">
                         <label>Username <span class="required">*</span></label>
-                        <input type="text" name="username" class="form-control" value="<?= htmlspecialchars($_POST['username'] ?? '') ?>" required autofocus>
+                        <!-- Default admin username is: admin -->
+                        <input type="text" name="username" class="form-control"
+                               placeholder="e.g. admin"
+                               value="<?= htmlspecialchars($_POST['username'] ?? '') ?>" required autofocus>
                     </div>
                     <div class="form-group">
                         <label>Password <span class="required">*</span></label>
-                        <input type="password" name="password" class="form-control" required>
+                        <!-- Default admin password is: admin123 -->
+                        <input type="password" name="password" class="form-control"
+                               placeholder="Enter admin password"
+                               required>
                     </div>
                     <button type="submit" class="btn btn-blue" style="width:100%; justify-content:center;">
                         Sign In to Admin Portal →
                     </button>
                 </form>
 
+                <!-- Default credentials reminder for testing -->
                 <p style="text-align:center; margin-top:18px; font-size:0.82rem; color:var(--mid-gray);">
-                    Default: admin / admin123
+                    Default: <strong>admin</strong> / <strong>admin123</strong>
                 </p>
             </div>
         </div>

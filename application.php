@@ -1,4 +1,6 @@
 <?php
+// Handles the application form: programme selection, BGCSE results entry, and submission
+// Once submitted=1, the 'locked' flag prevents editing of academic qualifications
 require_once 'includes/db.php';
 if (!isset($_SESSION['student_id'])) { header('Location: login.php'); exit; }
 

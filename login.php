@@ -2,27 +2,33 @@
 require_once 'includes/db.php';
 $error = '';
 
+// If student is already logged in, skip the login page
 if (isset($_SESSION['student_id'])) {
     header('Location: dashboard.php');
     exit;
 }
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    // Sanitize email input to prevent SQL injection
     $email = trim(mysqli_real_escape_string($conn, $_POST['email']));
     $pass  = $_POST['password'];
 
+    // Look up student by email
     $sql    = "SELECT id, first_name, last_name, password FROM students WHERE email='$email'";
     $result = mysqli_query($conn, $sql);
 
     if ($result && mysqli_num_rows($result) === 1) {
         $student = mysqli_fetch_assoc($result);
+        // password_verify() checks the plain text against the stored bcrypt hash
         if (password_verify($pass, $student['password'])) {
+            // Save student info in session — used to identify them on other pages
             $_SESSION['student_id']   = $student['id'];
             $_SESSION['student_name'] = $student['first_name'] . ' ' . $student['last_name'];
             header('Location: dashboard.php');
             exit;
         }
     }
+    // Vague message on purpose — don't reveal whether email or password was wrong
     $error = 'Invalid email or password. Please try again.';
 }
 ?>
@@ -74,11 +80,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 <form method="POST" action="">
                     <div class="form-group">
                         <label>Email Address <span class="required">*</span></label>
-                        <input type="email" name="email" class="form-control" value="<?= htmlspecialchars($_POST['email'] ?? '') ?>" required autofocus>
+                        <!-- placeholder shows the expected format to guide the user -->
+                        <input type="email" name="email" class="form-control"
+                               placeholder="e.g. john.doe@gmail.com"
+                               value="<?= htmlspecialchars($_POST['email'] ?? '') ?>"
+                               required autofocus>
                     </div>
                     <div class="form-group">
                         <label>Password <span class="required">*</span></label>
-                        <input type="password" name="password" class="form-control" required>
+                        <input type="password" name="password" class="form-control"
+                               placeholder="Enter your password"
+                               required>
                     </div>
                     <button type="submit" class="btn btn-blue" style="width:100%; justify-content:center; margin-top:4px;">
                         Sign In →
